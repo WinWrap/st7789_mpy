@@ -526,20 +526,108 @@ static mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
 
     const int buf_size = 256;
     int limit = MIN(buf_info.len, w * h * 2);
-    int chunks = limit / buf_size;
-    int rest = limit % buf_size;
-    int i = 0;
-    for (; i < chunks; i++) {
-        write_spi(self->spi_obj, (const uint8_t *)buf_info.buf + i * buf_size, buf_size);
-    }
-    if (rest) {
-        write_spi(self->spi_obj, (const uint8_t *)buf_info.buf + i * buf_size, rest);
+    const uint8_t *ptr = (const uint8_t *)buf_info.buf;
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        write_spi(self->spi_obj, ptr, count);
+        ptr += count;
+        limit -= count;
     }
     CS_HIGH();
 
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, st7789_ST7789_blit_buffer);
+
+static mp_obj_t st7789_ST7789_blit_buffer_scaled(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t buf_info;
+    mp_get_buffer_raise(args[1], &buf_info, MP_BUFFER_READ);
+    mp_int_t x = mp_obj_get_int(args[2]);
+    mp_int_t y = mp_obj_get_int(args[3]);
+    mp_int_t w = mp_obj_get_int(args[4]);
+    mp_int_t h = mp_obj_get_int(args[5]);
+    mp_buffer_info_t pattern_buf_info;
+    mp_get_buffer_raise(args[6], &pattern_buf_info, MP_BUFFER_READ);
+    mp_int_t scalex = mp_obj_get_int(args[7]);
+    mp_int_t scaley = mp_obj_get_int(args[8]);
+    mp_int_t background = mp_obj_get_int(args[9]);
+    uint8_t background_high = (background & 0xff00) >> 8;
+    uint8_t background_low = background & 0xff;
+
+    w *= scalex; // blit width
+    h *= scaley; // blit height
+    set_window(self, x, y, x + w - 1, y + h - 1);
+    DC_HIGH();
+    CS_LOW();
+
+    const int buf_size = 256;
+    uint8_t temp[buf_size];
+    int limit = MIN(buf_info.len * scalex * scaley, w * h * 2);
+    int x0 = 0;
+    int y0 = 0;
+    int xp = 0;
+    const uint8_t *rowptr = (const uint8_t *)buf_info.buf;
+    const uint8_t *ptr = rowptr;
+    const uint8_t *pattern_baseptr = (const uint8_t *)pattern_buf_info.buf;
+    const uint8_t *pattern_rowptr = pattern_baseptr;
+    const uint8_t *pattern_ptr = pattern_ptr;
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        uint8_t *dst = temp;
+        for (int i = 0; i < count; i += 2)
+        {
+            // process a single pixel of the repeating pattern
+            if (((*pattern_ptr << (xp % 8)) & 0x80) != 0) {
+                // copy blit pixel
+                *dst++ = *ptr;
+                *dst++ = ptr[1];
+            }
+            else {
+                // copy background
+                *dst++ = background_high;
+                *dst++ = background_low;
+            }
+            if (++xp == scalex) {
+                // end of pattern bytes
+                xp = 0; // user first bit of pattern
+                pattern_ptr = pattern_rowptr; // repeat the same pattern row
+            }
+            else if (xp % 8 == 0) {
+                // end of current pattern byte
+                ++pattern_ptr; // advance to next pattern byte
+            }
+            if (++x0 % scalex == 0) {
+                // finished repeating pixel scalex times in the x direction
+                ptr += 2;
+                if (x0 == w) {
+                    // finished repeating a line
+                    x0 = 0; // start of row
+                    xp = 0; // use first bit of pattern
+                    if (++y0 < scaley) {
+                        // repeat row, advance pattern row
+                        ptr = rowptr; // copy from start of row
+                        pattern_rowptr += (scalex + 7) / 8; // advance to next pattern row
+                        pattern_ptr = pattern_rowptr; // use current pattern row
+                    }
+                    else {
+                        // finished repeating a row of pixels, restart pattern rows
+                        y0 = 0;
+                        rowptr = ptr; // advance to next row
+                        pattern_rowptr = pattern_baseptr; // use first pattern row
+                        pattern_ptr = pattern_rowptr; // use first pattern row
+                    }
+                }
+            }
+        }
+        write_spi(self->spi_obj, temp, count);
+        limit -= count;
+    }
+    CS_HIGH();
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_scaled_obj, 10, 10, st7789_ST7789_blit_buffer_scaled);
 
 static mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -2358,6 +2446,7 @@ static const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&st7789_ST7789_pixel_obj)},
     {MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj)},
     {MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj)},
+    {MP_ROM_QSTR(MP_QSTR_blit_buffer_scaled), MP_ROM_PTR(&st7789_ST7789_blit_buffer_scaled_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw_len), MP_ROM_PTR(&st7789_ST7789_draw_len_obj)},
     {MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&st7789_ST7789_bitmap_obj)},

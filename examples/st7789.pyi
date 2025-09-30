@@ -255,6 +255,21 @@ class ST7789:
             height (int): Height
         """
 
+    def blit_buffer_scaled(self, buffer: bytes, x: int, y: int, width: int, height: int, pattern: bytes, scalex: int, scaley: int, background: int):
+        """
+        Copy buffer to display at the given location.
+        Args:
+            buffer (bytes): Data to copy to display
+            x (int): Top left corner x coordinate
+            y (int): Top left corner y coordinate
+            width (int): Width of data
+            height (int): Height of data
+            pattern (bytes): Pattern to control copying (one value per byte, scalex * scaley bytes)
+            scalex (int): scale pixel by scalex
+            scaley (int): scale pixel by scaley
+            background (int): 565 encoded backgound color (use here pattern is zero)
+        """
+
     def rect(self, x: int, y: int, w: int, h: int, color: int):
         """
         Draw a rectangle at the given location, size and color.
