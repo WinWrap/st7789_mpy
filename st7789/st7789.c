@@ -590,7 +590,7 @@ static mp_obj_t st7789_ST7789_blit_buffer_scaled(size_t n_args, const mp_obj_t *
             }
             if (++xp == scalex) {
                 // end of pattern bytes
-                xp = 0; // user first bit of pattern
+                xp = 0; // use first bit of pattern
                 pattern_ptr = pattern_rowptr; // repeat the same pattern row
             }
             else if (xp % 8 == 0) {

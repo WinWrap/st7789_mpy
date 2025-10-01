@@ -264,7 +264,7 @@ class ST7789:
             y (int): Top left corner y coordinate
             width (int): Width of data
             height (int): Height of data
-            pattern (bytes): Pattern to control copying (one value per byte, scalex * scaley bytes)
+            pattern (bytes): Pattern to control copying, (scalex + 7)//8 * scaley bytes
             scalex (int): scale pixel by scalex
             scaley (int): scale pixel by scaley
             background (int): 565 encoded backgound color (use here pattern is zero)

@@ -490,7 +490,7 @@ of the screen.
 - `blit_buffer_scaled(buffer, x, y, width, height, pattern_buffer, scalex, scaley, background)`
 
   Copy bytes() or bytearray() content to the screen internal memory scaled by scalex and scaley. Bytes are copied where pattern_buffer is non-zero otherwise background is used. Note:
-  every color requires 2 bytes in the array
+  every color requires 2 bytes in the array and pattern_buffer requires (scalex + 7)//8 * scaley bytes
 
 - `text(font, s, x, y[, fg, bg])`
 
