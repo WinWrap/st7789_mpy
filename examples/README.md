@@ -76,6 +76,10 @@ configuration modules for various devices and displays.
     the font2bitmap utility.
 
 
+## life.py
+
+    Conway's game of life simulation using blit_buffer_scaled method.
+
 ## paint.py
 
     A very simple paint program for the TTGO T-Watch-2020
