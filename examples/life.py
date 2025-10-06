@@ -6,7 +6,7 @@ import vga1_16x16 as font
 tft = tft_config.config(0)
 
 scale = 5 # should be 3 or greater (5 recommended)
-xdim = tft.height() // scale
+xdim = tft.width() // scale
 ydim = (tft.height()-font.HEIGHT-2) // scale
 
 if scale == 1:
