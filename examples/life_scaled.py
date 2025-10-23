@@ -38,12 +38,7 @@ def main():
 def init():
     global now, count, least, most
     now = [random.randint(0, 25) < 3 for x in range(0, xdim*ydim)]
-    index = 0 
-    for y in range(0, ydim):
-        for x in range(0, xdim):
-            if now[index] != 0:
-                count += 1
-            index += 1
+    count = sum(now)
     least = count
     most = count
 

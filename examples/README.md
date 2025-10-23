@@ -76,7 +76,11 @@ configuration modules for various devices and displays.
     the font2bitmap utility.
 
 
-## life.py
+## life_mosaic.py
+
+    Conway's game of life simulation using blit_bitmap_mosaic method.
+
+## life_scaled.py
 
     Conway's game of life simulation using blit_buffer_scaled method.
 
