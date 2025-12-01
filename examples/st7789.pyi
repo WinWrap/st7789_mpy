@@ -257,19 +257,6 @@ class ST7789:
             background (int): Pixel 0 color (565 color encoded)
         """
 
-    def blit_bitmap(self, bitmap: bytes, x: int, y: int, width: int, height: int, lookup: bytes, foreground: int, background: int):
-        """
-        Draw bitmap using foreground and background colors at the given location.
-        Args:
-            bitmap (bytes): Pixel data to copy to display (8 bits per pixel)
-            x (int): Top left corner x coordinate
-            y (int): Top left corner y coordinate
-            width (int): Width of data (bitmap rows start on a byte boundary)
-            height (int): Height of data
-            foreground (int): 565 encoded foreground color
-            background (int): 565 encoded Background color
-        """
-
     def blit_bitmap_mosaic(self, bitmap: bytes, bits_per_pixel: int, x: int, y: int, width: int, height: int, lookup: bytes, lookup_width: int, lookup_height: int):
         """
         Draw bitmap using a mosaic at the given location.
